@@ -1,6 +1,6 @@
 from textwrap import wrap
 
-code = {
+char_to_dna = {
     'a': 'AAA', 'b': 'AAC', 'c': 'AAG', 'd': 'AAT',
     'e': 'ACA', 'f': 'ACC', 'g': 'ACG', 'h': 'ACT',
     'i': 'AGA', 'j': 'AGC', 'k': 'AGG', 'l': 'AGT',
@@ -18,6 +18,8 @@ code = {
     '5': 'TGA', '6': 'TGC', '7': 'TGG', '8': 'TGT',
     '9': 'TTA', '0': 'TTC', ' ': 'TTG', '.': 'TTT'
 }
+
+dna_to_char = {v: k for k, v in char_to_dna.items()}
 
 dna_to_num = {
     'A': '0',
@@ -45,110 +47,112 @@ def hide(msg, dna_file, out_file):
     #  2. think about a technique how to hide encoded message in a DNA sequence - probably xor would be ok - DONE
     #  3. do a message extraction from encoded DNA file
 
-    encoded_msg = encode(msg)
+    encoded_msg = to_dna(msg)
+    encoded_msg = ''.join(encoded_msg)
+
     # print(encoded_msg)
-    # print(wrap(sequence, 3))
-
-    enc_base4 = []
-    base_base4 = []
-
-    for char in encoded_msg:
-        # print(''.join([nucleotides_map[letter] for letter in char]), end=' ')
-        enc_base4.append(''.join([dna_to_num[letter] for letter in char]))
+    # converting dna to binary
+    enc_bin = dna_to_bin(encoded_msg)
 
     s = wrap(sequence, 3)
-    # print('')
-    # print('==============================')
 
-    for char in s:
-        # print(''.join([nucleotides_map[letter] for letter in char]), end=', ')
-        base_base4.append(''.join([dna_to_num[letter] for letter in char]))
+    base_bin = dna_to_bin(s)
 
-    # print(enc_base4)
-    # print(base_base4)
+    # xoring message with base
+    xor = xor_bin(enc_bin, base_bin)
 
-    num_list = []
-    base_list = []
+    # converting binary to dna
+    dna = bin_to_dna(xor)
+    print('Hidden message :', dna)
 
-    for num in enc_base4:
-        digit_list = []
-        for digit in num:
-            digit_list.append('{:0>2b}'.format(int(digit)))
-            # print('{:0>2b}'.format(int(digit)))
-        # print('')
-        num_list.append(''.join(digit_list))
-
-    for num in base_base4:
-        digit_list = []
-        for digit in num:
-            digit_list.append('{:0>2b}'.format(int(digit)))
-            # print('{:0>2b}'.format(int(digit)))
-        # print('')
-        base_list.append(''.join(digit_list))
-
-    # print(num_list)
-    # print(base_list)
-
-    # Message
-    msg_length = 6 * len(num_list)
-    msg_bin = ('{:0>'+str(msg_length)+'b}').format(int(''.join(num_list), 2))
-    # print('      '+msg_bin)
-
-    # Base
-    base_len = 6 * len(base_list)
-    base_bin = ('{:0>'+str(base_len)+'b}').format(int(''.join(base_list), 2))
-    # print(base_bin)
-
-    # XOR
-
-    encoded_bin = int(msg_bin, 2) ^ int(base_bin, 2)
-    encoded_bin = ('{:0>'+str(base_len)+'b}').format(encoded_bin)
-    # print(encoded_bin)
-    #
-    enc_list = wrap(encoded_bin, 6)
-    # print(enc_list)
-    #
-
-    decoded = []
-    for i in range(len(enc_list)):
-        decoded.append(bin_to_dna(enc_list[i]))
-
-    # Fully hidden string in dna
-    print(''.join(decoded))
-
-    print('')
-
-    # TODO: Extracting
-
-    # with open(out_file, 'w') as out:
-    #     hidden = sequence + msg
-    #     print(hidden)
-    #     out.write(hidden)
+    with open(out_file, 'w') as out:
+        out.write(dna)
 
     print('Success')
 
 
-def encode(msg):
-    encoded_message = [code[letter] for letter in msg]
-    # print(encoded_message)
+def extract(hid_file, base_file):
+    # Extracting
+
+    with open(hid_file, 'r') as h:
+        hidden_message = h.read()
+
+    with open(base_file, 'r') as b:
+        base = b.read()
+
+    hidden_message_bin = dna_to_bin(hidden_message)
+    base_bin = dna_to_bin(base)
+
+    decoded = xor_bin(hidden_message_bin, base_bin)
+
+    decoded = bin(int(decoded, 2))[2:]
+
+    if (len(decoded) % 2) != 0:
+        decoded = '0' + decoded
+
+    decoded_dna = bin_to_dna(decoded)
+
+    if (len(decoded_dna) % 3) != 0:
+        decoded_dna = 'A' * (3 - len(decoded_dna) % 3) + decoded_dna
+
+    decoded_dna = wrap(decoded_dna, 3)
+
+    decoded_message = ''.join(from_dna(decoded_dna))
+
+    # return decoded_message
+    print('Extracted hidden message:', decoded_message)
+
+
+def to_dna(msg):
+    encoded_message = [char_to_dna[letter] for letter in msg]
+
     return encoded_message
+
+
+def from_dna(dna):
+    decoded_message = [dna_to_char[chunk] for chunk in dna]
+
+    return decoded_message
 
 
 def dna_to_bin(seq):
     seq_base4 = []
+    seq_bin = []
+    bin_seq_len = 6 * len(seq)
 
     for char in seq:
         seq_base4.append(''.join([dna_to_num[letter] for letter in char]))
+
+    for num in seq_base4:
+        digit_list = []
+        for digit in num:
+            digit_list.append('{:0>2b}'.format(int(digit)))
+
+        seq_bin.append(''.join(digit_list))
+
+    seq_bin_str = ('{:0>' + str(bin_seq_len) + 'b}').format(int(''.join(seq_bin), 2))
+
+    return seq_bin_str
 
 
 def bin_to_dna(binary):
     result_list = []
 
-    letters_bin = wrap(binary, 2)
+    bin_str_list = wrap(binary, 6)
 
-    for b in letters_bin:
-        result_list.append(int(b, 2))
+    for i in range(len(bin_str_list)):
+        one_letter_bin = wrap(bin_str_list[i], 2)
 
-    result = ''.join([num_to_dna[num] for num in result_list])
+        for b in one_letter_bin:
+            result_list.append(int(b, 2))
 
-    return result
+    dna = ''.join([num_to_dna[num] for num in result_list])
+
+    return dna
+
+
+def xor_bin(msg, base):
+    xor_result = int(msg, 2) ^ int(base, 2)
+    xor_result = ('{:0>' + str(len(base)) + 'b}').format(xor_result)
+
+    return xor_result
