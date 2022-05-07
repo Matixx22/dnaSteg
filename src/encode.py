@@ -45,7 +45,8 @@ def hide(msg, dna_file, out_file):
     # TODO: Do magic:
     #  1. encode message to DNA sequence - DONE
     #  2. think about a technique how to hide encoded message in a DNA sequence - probably xor would be ok - DONE
-    #  3. do a message extraction from encoded DNA file
+    #  3. do a message extraction from encoded DNA file - DONE
+    #  4. cleanup and more base file (different sizes)
 
     encoded_msg = to_dna(msg)
     encoded_msg = ''.join(encoded_msg)
