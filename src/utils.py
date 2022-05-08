@@ -41,34 +41,27 @@ num_to_dna = {
 def hide(msg, out_file):
     print(f'Hiding "{msg}" in sequence...')
 
-    # TODO: Do magic:
-    #  1. encode message to DNA sequence - DONE
-    #  2. think about a technique how to hide encoded message in a DNA sequence - probably xor would be ok - DONE
-    #  3. do a message extraction from encoded DNA file - DONE
-    #  4. cleanup and more base file (different sizes)
-
     encoded_msg = to_dna(msg)
     encoded_msg_str = ''.join(encoded_msg)
-    base_file = ""
+    base_file = ''
+
     # choose base dna file based on length of encoded message
-    all_bases = re.findall("[0-9]+", ''.join(os.listdir("../res")))
+    all_bases = re.findall('[0-9]+', ''.join(os.listdir('../res')))
     all_bases = [int(x) for x in all_bases]
     all_bases.sort()
-    print(len(encoded_msg_str))
+
     for base in all_bases:
         if base > len(encoded_msg_str):
-            base_file = "../res/base" + str(base) + ".dna"
+            base_file = '../res/base' + str(base) + '.dna'
             break
 
     try:
         with open(base_file, 'r') as in_file:
             sequence = in_file.read()
+
     except IOError as e:
         print(e)
         exit(1)
-
-    # Temporary print
-    print(f'Encoded message: {encoded_msg_str}, length: {len(encoded_msg_str)}')
 
     # converting dna to binary
     enc_bin = dna_to_bin(encoded_msg)
@@ -89,7 +82,7 @@ def hide(msg, out_file):
     print('Success')
 
 
-def extract(hid_file, base_file):
+def extract(hid_file):
     # extracting
 
     # read hidden
@@ -98,8 +91,9 @@ def extract(hid_file, base_file):
 
     # Open and read base dna file with length equal the hidden_message length
     try:
-        with open('base' + str(len(hidden_message)) + '.dna', 'r') as b:
+        with open('../res/base' + str(len(hidden_message)) + '.dna', 'r') as b:
             base = b.read()
+
     except IOError as e:
         print(e)
         exit(1)
