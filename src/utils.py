@@ -1,4 +1,6 @@
 from textwrap import wrap
+import os
+import re
 
 char_to_dna = {
     'a': 'AAA', 'b': 'AAC', 'c': 'AAG', 'd': 'AAT',
@@ -36,8 +38,8 @@ num_to_dna = {
 }
 
 
-def hide(msg, base_file, out_file):
-    print(f'Hiding "{msg}" in sequence in {base_file}...')
+def hide(msg, out_file):
+    print(f'Hiding "{msg}" in sequence...')
 
     # TODO: Do magic:
     #  1. encode message to DNA sequence - DONE
@@ -47,16 +49,26 @@ def hide(msg, base_file, out_file):
 
     encoded_msg = to_dna(msg)
     encoded_msg_str = ''.join(encoded_msg)
+    base_file = ""
+    # choose base dna file based on length of encoded message
+    all_bases = re.findall("[0-9]+", ''.join(os.listdir("../res")))
+    all_bases = [int(x) for x in all_bases]
+    all_bases.sort()
+    print(len(encoded_msg_str))
+    for base in all_bases:
+        if base > len(encoded_msg_str):
+            base_file = "../res/base" + str(base) + ".dna"
+            break
 
-    # TODO: chose base dna file based on length of encoded message
-    #  Then remove `base_file` from function arguments
+    try:
+        with open(base_file, 'r') as in_file:
+            sequence = in_file.read()
+    except IOError as e:
+        print(e)
+        exit(1)
 
     # Temporary print
     print(f'Encoded message: {encoded_msg_str}, length: {len(encoded_msg_str)}')
-
-    # TODO: Change this Kacper
-    with open(base_file, 'r') as in_file:
-        sequence = in_file.read()
 
     # converting dna to binary
     enc_bin = dna_to_bin(encoded_msg)
@@ -84,13 +96,13 @@ def extract(hid_file, base_file):
     with open(hid_file, 'r') as h:
         hidden_message = h.read()
 
-    # TODO: Open and read base dna file with length equal the hidden_message length
-    #  Then remove `base_file` from function arguments
-
-    # TODO: Change this Kacper
-    # read base
-    with open(base_file, 'r') as b:
-        base = b.read()
+    # Open and read base dna file with length equal the hidden_message length
+    try:
+        with open('base' + str(len(hidden_message)) + '.dna', 'r') as b:
+            base = b.read()
+    except IOError as e:
+        print(e)
+        exit(1)
 
     # decode from dna to binary
     hidden_message_bin = dna_to_bin(hidden_message)
