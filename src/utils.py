@@ -46,12 +46,13 @@ def hide(msg, base_file, out_file):
     #  4. cleanup and more base file (different sizes)
 
     encoded_msg = to_dna(msg)
-    encoded_msg = ''.join(encoded_msg)
+    encoded_msg_str = ''.join(encoded_msg)
 
     # TODO: chose base dna file based on length of encoded message
     #  Then remove `base_file` from function arguments
 
-    print(f'Encoded message: {encoded_msg}, length: {len(encoded_msg)}')
+    # Temporary print
+    print(f'Encoded message: {encoded_msg_str}, length: {len(encoded_msg_str)}')
 
     # TODO: Change this Kacper
     with open(base_file, 'r') as in_file:
