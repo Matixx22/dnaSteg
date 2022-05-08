@@ -1,6 +1,6 @@
 import argparse
 
-from encode import extract
+from utils import extract
 
 
 def main():

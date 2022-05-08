@@ -1,6 +1,6 @@
 import argparse
 
-from encode import hide
+from utils import hide
 
 
 def main():

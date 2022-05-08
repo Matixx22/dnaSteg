@@ -36,11 +36,8 @@ num_to_dna = {
 }
 
 
-def hide(msg, dna_file, out_file):
-    print(f'Hiding "{msg}" in sequence in {dna_file}...')
-
-    with open(dna_file, 'r') as in_file:
-        sequence = in_file.read()
+def hide(msg, base_file, out_file):
+    print(f'Hiding "{msg}" in sequence in {base_file}...')
 
     # TODO: Do magic:
     #  1. encode message to DNA sequence - DONE
@@ -51,12 +48,19 @@ def hide(msg, dna_file, out_file):
     encoded_msg = to_dna(msg)
     encoded_msg = ''.join(encoded_msg)
 
-    # print(encoded_msg)
+    # TODO: chose base dna file based on length of encoded message
+    #  Then remove `base_file` from function arguments
+
+    print(f'Encoded message: {encoded_msg}, length: {len(encoded_msg)}')
+
+    # TODO: Change this Kacper
+    with open(base_file, 'r') as in_file:
+        sequence = in_file.read()
+
     # converting dna to binary
     enc_bin = dna_to_bin(encoded_msg)
 
     s = wrap(sequence, 3)
-
     base_bin = dna_to_bin(s)
 
     # xoring message with base
@@ -73,34 +77,45 @@ def hide(msg, dna_file, out_file):
 
 
 def extract(hid_file, base_file):
-    # Extracting
+    # extracting
 
+    # read hidden
     with open(hid_file, 'r') as h:
         hidden_message = h.read()
 
+    # TODO: Open and read base dna file with length equal the hidden_message length
+    #  Then remove `base_file` from function arguments
+
+    # TODO: Change this Kacper
+    # read base
     with open(base_file, 'r') as b:
         base = b.read()
 
+    # decode from dna to binary
     hidden_message_bin = dna_to_bin(hidden_message)
     base_bin = dna_to_bin(base)
 
+    # extract message
     decoded = xor_bin(hidden_message_bin, base_bin)
 
     decoded = bin(int(decoded, 2))[2:]
 
+    # binary padding
     if (len(decoded) % 2) != 0:
         decoded = '0' + decoded
 
     decoded_dna = bin_to_dna(decoded)
 
+    # dna padding
     if (len(decoded_dna) % 3) != 0:
         decoded_dna = 'A' * (3 - len(decoded_dna) % 3) + decoded_dna
 
     decoded_dna = wrap(decoded_dna, 3)
 
+    # decode from dna to text
     decoded_message = ''.join(from_dna(decoded_dna))
 
-    # return decoded_message
+    # print decoded_message
     print('Extracted hidden message:', decoded_message)
 
 
